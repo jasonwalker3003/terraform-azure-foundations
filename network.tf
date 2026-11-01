@@ -1,14 +1,9 @@
 resource "azurerm_virtual_network" "lab" {
-  name                = "vnet-tf-w05"
+  name                = "vnet-${var.prefix}"
   location            = azurerm_resource_group.lab.location
   resource_group_name = azurerm_resource_group.lab.name
   address_space       = ["10.50.0.0/16"]
-
-  tags = {
-    env   = "lab"
-    owner = "jason"
-    week  = "05"
-  }
+  tags                = local.tags
 }
 
 resource "azurerm_subnet" "vm" {
@@ -19,14 +14,21 @@ resource "azurerm_subnet" "vm" {
 }
 
 resource "azurerm_network_security_group" "vm" {
-  name                = "nsg-tf-w05"
+  name                = "nsg-${var.prefix}"
   location            = azurerm_resource_group.lab.location
   resource_group_name = azurerm_resource_group.lab.name
+  tags                = local.tags
 
-  tags = {
-    env   = "lab"
-    owner = "jason"
-    week  = "05"
+  security_rule {
+    name                       = "allow-ssh-from-me"
+    priority                   = 100
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_address_prefix      = "${var.my_ip}/32"
+    source_port_range          = "*"
+    destination_address_prefix = "*"
+    destination_port_range     = "22"
   }
 }
 
